@@ -1,4 +1,4 @@
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 
 mcp = FastMCP("Demo Server")
 
@@ -22,7 +22,6 @@ def get_user(name: str) -> str:
         "rahul": "Rahul is a software engineer.",
         "amit": "Amit is a data scientist.",
     }
-
     return users.get(name.lower(), "User not found")
 
 
