@@ -1,5 +1,5 @@
-
 import asyncio
+import os
 
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_groq import ChatGroq
@@ -9,15 +9,8 @@ from langgraph.prebuilt import create_react_agent
 async def main():
     client = MultiServerMCPClient({
         "demo": {
-            "command": "uv",
-            "args": [
-                "run",
-                "--project",
-                r"C:\CODE\MCP",
-                "python",
-                r"C:\CODE\MCP\FINAL\server.py",
-            ],
-            "transport": "stdio",
+            "transport": "http",
+            "url": "https://tender-pink-sturgeon.fastmcp.app/mcp",
         }
     })
 
