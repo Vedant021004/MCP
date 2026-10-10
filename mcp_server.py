@@ -25,9 +25,6 @@ def get_user(name: str) -> str:
     return users.get(name.lower(), "User not found")
 
 
+
 if __name__ == "__main__":
-    mcp.run(
-        transport="streamable-http",
-        host="0.0.0.0",
-        port=8000
-    )
+    mcp.run(transport="http", host="127.0.0.1", port=8000)

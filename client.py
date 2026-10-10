@@ -1,46 +1,68 @@
-import asyncio
-import os
 
-from langchain_mcp_adapters.client import MultiServerMCPClient
+import asyncio
+from fastmcp import Client
+from langchain.mcp import MCPAdapter
 from langchain_groq import ChatGroq
 from langgraph.prebuilt import create_react_agent
 
+SERVER_URL = "http://127.0.0.1:8000/mcp"
+
 
 async def main():
-    client = MultiServerMCPClient({
-        "demo": {
-            "transport": "http",
-            "url": "https://tender-pink-sturgeon.fastmcp.app/mcp",
-        }
-    })
+    mcp_client = Client(SERVER_URL)
 
-    tools = await client.get_tools()
+    async with MCPAdapter(mcp_client) as adapter:
+        tools = await adapter.list_tools()
+        print("MCP tools:", [tool.name for tool in tools])
 
-    print("Available tools:")
-    for tool in tools:
-        print("-", tool.name)
+        llm = ChatGroq(
+            model="openai/gpt-oss-120b",
+            temperature=0,
+        )
 
-    model = ChatGroq(
-        model="llama-3.3-70b-versatile",
-        temperature=0,
-    )
+        agent = create_react_agent(
+            model=llm,
+            tools=tools,
+        )
 
-    agent = create_react_agent(
-        model=model,
-        tools=tools,
-    )
+        print("\nMCP Agent is ready! Type 'exit' to quit.")
 
-    result = await agent.ainvoke({
-        "messages": [
-            {
-                "role": "user",
-                "content": "Use the multiply tool to calculate 25 multiplied by 4.",
-            }
-        ]
-    })
+        while True:
+            user_input = input("\nYou: ").strip()
 
-    print("\nAgent response:")
-    print(result["messages"][-1].content)
+            if user_input.lower() in {"exit", "quit"}:
+                print("Goodbye!")
+                break
+
+            if not user_input:
+                continue
+
+            try:
+
+                response = await agent.ainvoke({
+                    "messages": [
+                        {"role": "user", "content": user_input}
+                    ]
+                })
+
+                for message in response["messages"]:
+                    if getattr(message, "tool_calls", None):
+                        for call in message.tool_calls:
+                            print(
+                                f"\n[MCP TOOL REQUEST] "
+                                f"{call['name']}({call['args']})"
+                            )
+                    elif getattr(message, "type", "") == "tool":
+                        print(
+                            f"[TOOL RESULT] {message.name}: "
+                            f"{message.content}"
+                        )
+
+                print("\nAgent:", response["messages"][-1].content)
+
+
+            except Exception as e:
+                print(f"\nError: {e}")
 
 
 if __name__ == "__main__":
