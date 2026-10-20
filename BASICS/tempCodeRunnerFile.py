@@ -1,16 +1,16 @@
-
-
 import asyncio
-
-async def get_data():
-    print("Getting data...")
-    await asyncio.sleep(2)
-    return "Data received"
-
+from fastmcp import Client
 
 async def main():
-    result = await get_data()
-    print(result)
+    async with Client("server.py") as client:
 
+        async with Client("server.py") as client:
+            tools = await client.list_tools()
+
+            for tool in tools:
+                print("Tool name:", tool.name)
+                print("Description:", tool.description)
+                print("Input schema:", tool.inputSchema)
+                print("---")
 
 asyncio.run(main())

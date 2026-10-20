@@ -5,7 +5,7 @@ mcp = FastMCP("Demo Server")
 
 @mcp.tool()
 def add(a: int, b: int) -> int:
-    """Add two numbers."""
+    """Add ddo numbers."""
     return a + b
 
 
